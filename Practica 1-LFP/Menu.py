@@ -1,6 +1,48 @@
+class Producto:
+    def __init__(self, nombre, cantidad, precio_unitario, ubicacion):
+        self.nombre = nombre
+        self.cantidad = cantidad
+        self.precio_unitario = precio_unitario
+        self.ubicacion = ubicacion
 
+    def actualizr_cantidad(self, cantidad):
+        self.cantidad += cantidad
+
+    def vender(self, cantidad):
+        if cantidad <= self.cantidad:
+            self.cantidad -= cantidad
+            return True
+        else:
+            return False
+        
+class Inventario:
+    def __init__(self):
+        self.productos = {}
+
+    def cargar_inventario_inicial(self, archivo):
+        with open(archivo, "r", "UTF-8") as f:
+            for linea in f:
+                instruccion, detalles = linea.strip().split(' ', 1)
+                if instruccion == 'crear_producto':
+                    nombre, cantidad, precio, ubicacion = detalles.split(';')
+                    producto = Producto(nombre, int(cantidad), float(precio), ubicacion)
+                    self.productos[nombre + '_' + ubicacion] = producto
+
+    def cargar_instrucciones_movimientos(self, archivo):
+        with open(archivo, "r", "UTF-8") as f:
+            for linea in f:
+                instruccion, detalles = linea.strip().split(' ', 1)
+                if instruccion == 'agregar_stock':
+                    nombre, cantidad, ubicacion = detalles.split(';')
+                    key = nombre + '_' + ubicacion
+                    if key in self.productos:
+                        self.productos[key].actualizar_cantidad(int(cantidad))
+                    else:
+        
+
+#Menú
 print("-------------------------------------------------------")
-print("   Práctia 1 - Lenguajes Formales y de Programación    ")
+print("   Práctica 1 - Lenguajes Formales y de Programación    ")
 print("-------------------------------------------------------")
 print("# Sistema de Inventario: ")
 
