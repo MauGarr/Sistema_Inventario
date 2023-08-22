@@ -5,7 +5,7 @@ class Producto:
         self.precio_unitario = precio_unitario
         self.ubicacion = ubicacion
 
-    def actualizr_cantidad(self, cantidad):
+    def actualizar_cantidad(self, cantidad):
         self.cantidad += cantidad
 
     def vender(self, cantidad):
@@ -20,7 +20,7 @@ class Inventario:
         self.productos = {}
 
     def cargar_inventario_inicial(self, archivo):
-        with open(archivo, "r", "UTF-8") as f:
+        with open(archivo, "r", encoding="utf-8") as f:
             for linea in f:
                 instruccion, detalles = linea.strip().split(' ', 1)
                 if instruccion == 'crear_producto':
@@ -29,7 +29,7 @@ class Inventario:
                     self.productos[nombre + '_' + ubicacion] = producto
 
     def cargar_instrucciones_movimientos(self, archivo):
-        with open(archivo, "r", "UTF-8") as f:
+        with open(archivo, "r", encoding="utf-8") as f:
             for linea in f:
                 instruccion, detalles = linea.strip().split(' ', 1)
                 if instruccion == 'agregar_stock':
@@ -38,34 +38,82 @@ class Inventario:
                     if key in self.productos:
                         self.productos[key].actualizar_cantidad(int(cantidad))
                     else:
-        
+                        print(f"Error: Producto '{nombre}' no exite en la ubicación '{ubicacion}'.")
+                elif instruccion == 'vender_producto':
+                    nombre, cantidad, ubicacion = detalles.split(';')
+                    key = nombre + '_' + ubicacion
+                    if key in self.productos:
+                        if self.productos[key].vender(int(cantidad)):
+                            print(f"Venta de {cantidad} unidades de '{nombre}' en '{ubicacion}' realizada.")
+                        else:
+                            print(f"Error: Cantidad insuficiente de '{nombre}' en '{ubicacion}'.")
+                    else:
+                        print(f"Error: Producto '{nombre}' no existe en la ubicación '{ubicacion}'.")
+
+    def ordenar_por_ubicacion(self):
+        sorted_products = sorted(self.productos.values(), key=lambda producto: producto.ubicacion)
+        return sorted_products
+
+    def crear_informe_inventario(self, archivo):
+        productos_ordenados = self.ordenar_por_ubicacion()
+        with open(archivo, 'w', encoding="UTF-8") as f:
+            f.write("Informe de Inventario:\n")
+            f.write("Ordenado por Ubicación\n")
+            f.write("{:<15} {:<10} {:<15} {:<15} {:<10}\n".format("Producto", "Cantidad", "Precio Unitario", "Valor Total", "Ubicación"))
+            f.write("-" * 70 + "\n")
+
+            for producto in productos_ordenados:
+                valor_total = producto.cantidad * producto.precio_unitario
+                f.write("{:<15} {:<10} ${:<15} ${:<15} {:<10}\n".format(producto.nombre, producto.cantidad, producto.precio_unitario, valor_total, producto.ubicacion))
+
+def main(): 
+    inventario = Inventario()
+
+    print("-------------------------------------------------------")
+    print("   Práctica 1 - Lenguajes Formales y de Programación    ")
+    print("-------------------------------------------------------")
+    print("# Sistema de Inventario: ")
 
 #Menú
-print("-------------------------------------------------------")
-print("   Práctica 1 - Lenguajes Formales y de Programación    ")
-print("-------------------------------------------------------")
-print("# Sistema de Inventario: ")
+    while True:
 
-menuprincipal = int(input("\n 1. Cargar Inventario Inicial \n 2. Cargar Instrucciones de Movimientos \n 3. Crear Informe de Inventario \n 4. Salir \n Ingrese una opción: "))
+        print("\nMenú Principal:")
+        print("1. Cargar Inventario Inicial")
+        print("2. Cargar Instrucciones de Movimientos")
+        print("3. Crear Informe de Inventario")
+        print("4. Salir")
+        opcion = input("Inrese una opción: ")
 
-while menuprincipal !=4:
+        if opcion == '1':
+            archivo_inventario = input("Ingrese el nombre del archivo (.inv): ")
+            inventario.cargar_inventario_inicial(archivo_inventario)
+            print("\n----------------------------------------")
+            print("Inventario Inicial Cargado Exitosamente.")
+            print("----------------------------------------")
 
-    if menuprincipal == 1:
-        print("---------------------------------")
-        print("Cargue los datos del inventario")
-        ruta = input("Ingrese los datos: ")
+        elif opcion == '2':
+            archivo_movimientos = input("Ingrese el nombre del archivo (.mov): ")
+            inventario.cargar_instrucciones_movimientos(archivo_movimientos)
+            print("\n---------------------------------------------------")
+            print("Instrucciones de Movimientos Cargados Exitosamente.")
+            print("----------------------------------------------------")
+            
+        elif opcion == '3':
+            archivo_informe = input("Ingrese el nombre del archivo de informe (.txt): ")
+            inventario.crear_informe_inventario(archivo_informe)
+            print("\n----------------------------------------")
+            print(f"Informe de inventario creado en '{archivo_informe}'.")
+            print("----------------------------------------")
+            
 
-    elif menuprincipal == 2:
-        print("-----------------------------------------")
-        print("Cargue las instrucciones de movimientos")
+        elif opcion == '4':
+            print("------------------------")
+            print("Saliendo del programa.")
+            print("------------------------")
+            break
 
-    elif menuprincipal == 3:
-        print("----------------------------")
-        print("Cargando datos del Informe")
+        else:
+            print("\nOpción Inválidad. Por favor, ingresar una opción válida.")
 
-    else:   
-        print("----------------------------------------")
-        print("¡Por favor digita una opción correcta!")
-        print("----------------------------------------")
-
-    menuprincipal = int(input("\n 1. Cargar Inventario Inicial \n 2. Cargar Instrucciones de Movimientos \n 3. Crear Informe de Inventario \n 4. Salir \n Ingrese una opción: "))
+if __name__ == "__main__":
+    main()
